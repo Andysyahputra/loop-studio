@@ -169,6 +169,38 @@
       @media (prefers-color-scheme: dark){ .ctl .lab output{ color:var(--accent); } }
       input[type="range"]{ width:100%; accent-color:var(--accent); padding:0; cursor:pointer; }
 
+      /* custom mode */
+      .custom-cta{
+        width:100%; margin-top:12px; text-align:left; cursor:pointer; font:inherit;
+        background:var(--yellow-soft); border:1.5px dashed var(--line-strong); border-radius:14px 14px 14px 4px;
+        padding:12px 13px; color:var(--ink); transition:transform .13s ease, box-shadow .13s ease;
+      }
+      .custom-cta:hover{ transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+      .custom-cta[aria-pressed="true"]{ background:var(--yellow); box-shadow:var(--shadow); border-style:solid; }
+      .custom-cta b{ display:block; font-size:13.5px; font-weight:800; }
+      .custom-cta span{ display:block; font-size:12.3px; color:var(--muted); margin-top:2px; line-height:1.45; }
+      .custom-cta .hand{ font-size:18px; color:var(--accent-dark); }
+      .custom-panel{
+        display:none; padding:14px 18px 16px; border-bottom:1.5px solid var(--line); background:var(--yellow-soft);
+      }
+      .custom-panel.on{ display:block; }
+      .custom-panel h3{ margin:0 0 4px; font-size:14px; font-weight:800; }
+      .custom-panel p{ margin:0 0 10px; font-size:12.8px; color:var(--muted); line-height:1.55; }
+      .snippet-row{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
+      .snippet-btn{
+        font:inherit; font-size:12.3px; font-weight:700; cursor:pointer;
+        background:var(--panel); border:1.5px solid var(--line-strong); border-radius:999px; padding:6px 11px; color:var(--ink);
+      }
+      .snippet-btn:hover{ background:var(--accent-soft); transform:translateY(-1px); }
+      .save-row{ display:flex; gap:8px; flex-wrap:wrap; }
+      .save-row input{
+        flex:1; min-width:160px; font:inherit; font-size:13px; font-weight:600; color:var(--ink);
+        background:var(--panel); border:1.5px solid var(--line-strong); border-radius:999px; padding:8px 13px;
+      }
+      .custom-help{ font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px; }
+      .custom-help code{ font-family:"JetBrains Mono",monospace; font-size:11.5px; background:var(--panel); border:1px solid var(--line); border-radius:5px; padding:1px 5px; color:var(--ink); }
+      .custom-empty{ font-size:12.5px; color:var(--faint); grid-column:1/-1; margin:2px 0 0; }
+
       /* sticky note — ditulis seperti catatan tempel di meja kerja */
       .note-card{
         position:relative; margin-top:22px; background:var(--yellow-soft);
@@ -363,6 +395,13 @@
       <aside class="side">
         <h2><span class="step">01</span> Preset gerakan <span class="hint">klik buat ganti</span></h2>
         <div class="preset-grid" id="presetGrid"></div>
+        <button class="custom-cta" id="customModeBtn" type="button" aria-pressed="false">
+          <span class="hand">pengen bikin sendiri?</span>
+          <b>✎ Buat Kode Sendiri</b>
+          <span>Kanvas kosong — tulis kode dari nol, sisipkan snippet, lalu simpan jadi presetmu.</span>
+        </button>
+        <h2 id="customPresetHead" style="display:none"><span class="step">★</span> Preset buatanmu</h2>
+        <div class="preset-grid" id="customPresetGrid"></div>
 
         <h2><span class="step">02</span> Palet warna</h2>
         <div class="swatches" id="swatches"></div>
@@ -434,6 +473,25 @@
           <button class="btn" id="copyBtn" type="button">Salin Kode</button>
           <button class="btn" id="dlCodeBtn" type="button">Unduh .js</button>
           <button class="btn" id="resetBtn" type="button">Reset Preset</button>
+        </div>
+        <div class="custom-panel" id="customPanel">
+          <h3>Mode Buat Kode Sendiri <span class="hand" style="font-size:18px;color:var(--accent)">— kanvas kosong, bebas!</span></h3>
+          <p>Kode di bawah dijalankan tiap frame sebagai <b>draw(ctx, time, w, h)</b> — di sini variabelnya <code style="font-family:'JetBrains Mono',monospace;font-size:11.5px">ctx, t, W, H, P</code>. Preview langsung jalan saat kamu mengetik. Pakai <code style="font-family:'JetBrains Mono',monospace;font-size:11.5px">sin(TAU*t*k)</code> (k bilangan bulat) supaya loop-nya mulus.</p>
+          <p style="margin-bottom:6px"><b>Sisipkan snippet:</b> klik untuk menambah contoh ke posisi kursor di editor.</p>
+          <div class="snippet-row" id="snippetRow">
+            <button class="snippet-btn" type="button" data-snippet="lingkaran">● Lingkaran berdenyut</button>
+            <button class="snippet-btn" type="button" data-snippet="gelombang">≈ Gelombang</button>
+            <button class="snippet-btn" type="button" data-snippet="partikel">✦ Partikel</button>
+            <button class="snippet-btn" type="button" data-snippet="gradien">▓ Gradien latar</button>
+            <button class="snippet-btn" type="button" data-snippet="bintang">★ Bintang berkelip</button>
+            <button class="snippet-btn" type="button" data-snippet="teks">T Teks di tengah</button>
+          </div>
+          <div class="save-row">
+            <input type="text" id="customName" placeholder="Nama preset kamu… mis. Ombak Pagi" maxlength="40" aria-label="Nama preset buatan sendiri" />
+            <button class="btn btn-primary" id="saveCustomBtn" type="button">Simpan Jadi Preset</button>
+            <button class="btn" id="blankBtn" type="button">Kanvas Kosong</button>
+          </div>
+          <p class="custom-help">Bantuan singget: lingkaran <code>ctx.arc(x, y, r, 0, TAU)</code> · gelombang <code>sin(x*0.008 + TAU*t*2)</code> · partikel <code>rng(seed)</code> buat posisi tetap · warna <code>P.c1 / P.c2 / P.c3</code>, transparan <code>A(P.c1, 0.5)</code>, campur <code>mix(P.c1, P.c2, 0.5)</code>. Preset yang disimpan muncul di panel kiri (Preset buatanmu) dan bisa direkam jadi video dengan tombol <b>Rekam Video</b> di atas — sama seperti preset biasa.</p>
         </div>
         <div class="editor-wrap">
           <textarea id="editor" spellcheck="false" aria-label="Editor kode gerakan"></textarea>
@@ -737,6 +795,510 @@ code:
 "ctx.fillRect(0, dasar, W, 2);\n" +
 "ctx.fillStyle = A(P.c1, 0.10);\n" +
 "ctx.fillRect(0, dasar + 2, W, H * 0.05);"
+},
+{ id:'morning', name:'Morning Loop', desc:'Matahari terbit perlahan, kabut tipis, dan burung lewat di langit pagi.',
+code:
+"// Langit pagi bergradasi\n" +
+"var g = ctx.createLinearGradient(0, 0, 0, H);\n" +
+"g.addColorStop(0, P.bg);\n" +
+"g.addColorStop(0.55, A(P.c2, 0.55));\n" +
+"g.addColorStop(1, A(P.c1, 0.35));\n" +
+"ctx.fillStyle = g;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Sinar matahari berputar pelan\n" +
+"var sx = W * 0.5, sy = H * (0.60 - 0.20 * sin(TAU * t));\n" +
+"ctx.save();\n" +
+"ctx.translate(sx, sy);\n" +
+"ctx.rotate(TAU * t * 0.5);\n" +
+"for (var i = 0; i < 12; i++) {\n" +
+"  ctx.rotate(TAU / 12);\n" +
+"  ctx.beginPath();\n" +
+"  ctx.moveTo(0, -W * 0.015);\n" +
+"  ctx.lineTo(W * 0.42, 0);\n" +
+"  ctx.lineTo(0, W * 0.015);\n" +
+"  ctx.closePath();\n" +
+"  ctx.fillStyle = A(P.c1, 0.14);\n" +
+"  ctx.fill();\n" +
+"}\n" +
+"ctx.restore();\n" +
+"\n" +
+"// Matahari\n" +
+"var sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, W * 0.22);\n" +
+"sg.addColorStop(0, A(P.c3, 0.95));\n" +
+"sg.addColorStop(0.35, A(P.c1, 0.85));\n" +
+"sg.addColorStop(1, A(P.c1, 0));\n" +
+"ctx.fillStyle = sg;\n" +
+"ctx.fillRect(sx - W * 0.22, sy - W * 0.22, W * 0.44, W * 0.44);\n" +
+"ctx.beginPath();\n" +
+"ctx.arc(sx, sy, W * 0.075, 0, TAU);\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fill();\n" +
+"\n" +
+"// Burung lewat — posisi melingkar penuh supaya nyambung\n" +
+"ctx.strokeStyle = A(P.bg, 0.9);\n" +
+"ctx.lineWidth = Math.max(2, W * 0.004);\n" +
+"for (var b = 0; b < 5; b++) {\n" +
+"  var bx = ((b * 0.22 + t) % 1.2 - 0.1) * W;\n" +
+"  var by = H * (0.16 + b * 0.045) + sin(TAU * t * 4 + b * 1.8) * H * 0.012;\n" +
+"  var flap = sin(TAU * t * 6 + b * 2.1) * W * 0.012;\n" +
+"  ctx.beginPath();\n" +
+"  ctx.moveTo(bx - W * 0.022, by + flap);\n" +
+"  ctx.lineTo(bx, by);\n" +
+"  ctx.lineTo(bx + W * 0.022, by + flap);\n" +
+"  ctx.stroke();\n" +
+"}\n" +
+"\n" +
+"// Bukit berlapis di bawah\n" +
+"for (var lap = 0; lap < 3; lap++) {\n" +
+"  var pp = lap / 2;\n" +
+"  ctx.beginPath();\n" +
+"  ctx.moveTo(0, H);\n" +
+"  for (var x = 0; x <= W; x += 8) {\n" +
+"    var y = H * (0.74 + pp * 0.09) + sin(x * 0.005 + lap * 2.2 + TAU * t) * H * 0.018;\n" +
+"    ctx.lineTo(x, y);\n" +
+"  }\n" +
+"  ctx.lineTo(W, H);\n" +
+"  ctx.closePath();\n" +
+"  ctx.fillStyle = A(lap % 2 ? P.c2 : P.c1, 0.35 + pp * 0.5);\n" +
+"  ctx.fill();\n" +
+"}\n" +
+"\n" +
+"// Kabut tipis melayang\n" +
+"ctx.fillStyle = A(P.c3, 0.10 + 0.05 * sin(TAU * t * 2));\n" +
+"ctx.fillRect(0, H * 0.66, W, H * 0.07);"
+},
+{ id:'sunset', name:'Sunset Loop', desc:'Matahari besar turun di atas laut, pantulannya berkilau di ombak.',
+code:
+"// Langit senja\n" +
+"var g = ctx.createLinearGradient(0, 0, 0, H);\n" +
+"g.addColorStop(0, P.bg);\n" +
+"g.addColorStop(0.5, A(P.c1, 0.75));\n" +
+"g.addColorStop(0.62, A(P.c2, 0.85));\n" +
+"g.addColorStop(1, P.bg);\n" +
+"ctx.fillStyle = g;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Matahari besar turun-naik pelan di cakrawala\n" +
+"var sx = W * 0.5, sy = H * (0.52 + 0.07 * sin(TAU * t));\n" +
+"var sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, W * 0.34);\n" +
+"sg.addColorStop(0, A(P.c3, 0.95));\n" +
+"sg.addColorStop(0.4, A(P.c1, 0.55));\n" +
+"sg.addColorStop(1, A(P.c1, 0));\n" +
+"ctx.fillStyle = sg;\n" +
+"ctx.fillRect(sx - W * 0.34, sy - W * 0.34, W * 0.68, W * 0.68);\n" +
+"ctx.beginPath();\n" +
+"ctx.arc(sx, sy, W * 0.17, 0, TAU);\n" +
+"ctx.fillStyle = mix(P.c1, P.c3, 0.45);\n" +
+"ctx.fill();\n" +
+"\n" +
+"// Laut di bawah cakrawala\n" +
+"ctx.fillStyle = A(P.bg, 0.72);\n" +
+"ctx.fillRect(0, H * 0.62, W, H * 0.38);\n" +
+"\n" +
+"// Pantulan matahari berkilau\n" +
+"var RND = rng(31);\n" +
+"for (var i = 0; i < 42; i++) {\n" +
+"  var ry = H * 0.64 + (i / 42) * H * 0.32;\n" +
+"  var lebarP = W * (0.16 - (i / 42) * 0.06) * (0.6 + 0.4 * sin(TAU * t * 3 + i * 1.9));\n" +
+"  var rx = sx - lebarP / 2 + sin(TAU * t * 2 + i * 2.7) * W * 0.02;\n" +
+"  ctx.fillStyle = A(i % 2 ? P.c1 : P.c2, 0.55 - (i / 42) * 0.3);\n" +
+"  ctx.fillRect(rx, ry, Math.max(6, lebarP), H * 0.006);\n" +
+"}\n" +
+"\n" +
+"// Ombak tipis bergerak\n" +
+"for (var lap = 0; lap < 3; lap++) {\n" +
+"  ctx.beginPath();\n" +
+"  ctx.moveTo(0, H);\n" +
+"  for (var x = 0; x <= W; x += 8) {\n" +
+"    var y2 = H * (0.80 + lap * 0.06) + sin(x * 0.009 + TAU * t * (1 + lap) + lap * 1.6) * H * 0.012;\n" +
+"    ctx.lineTo(x, y2);\n" +
+"  }\n" +
+"  ctx.lineTo(W, H);\n" +
+"  ctx.closePath();\n" +
+"  ctx.fillStyle = A(lap % 2 ? P.c2 : P.c1, 0.20 + lap * 0.14);\n" +
+"  ctx.fill();\n" +
+"}"
+},
+{ id:'mountain', name:'Mountain Loop', desc:'Barisan gunung bersalju, awan berjalan, matahari mengelilingi puncak.',
+code:
+"ctx.fillStyle = P.bg;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Matahari mengorbit di belakang gunung\n" +
+"var ox = W * 0.5 + cos(TAU * t - 1.57) * W * 0.34;\n" +
+"var oy = H * 0.42 + sin(TAU * t - 1.57) * H * 0.20;\n" +
+"var og = ctx.createRadialGradient(ox, oy, 0, ox, oy, W * 0.20);\n" +
+"og.addColorStop(0, A(P.c3, 0.95));\n" +
+"og.addColorStop(1, A(P.c3, 0));\n" +
+"ctx.fillStyle = og;\n" +
+"ctx.fillRect(ox - W * 0.20, oy - W * 0.20, W * 0.40, W * 0.40);\n" +
+"ctx.beginPath();\n" +
+"ctx.arc(ox, oy, W * 0.055, 0, TAU);\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fill();\n" +
+"\n" +
+"// Gunung jauh\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(0, H * 0.78);\n" +
+"ctx.lineTo(W * 0.28, H * 0.38);\n" +
+"ctx.lineTo(W * 0.52, H * 0.78);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = A(P.c2, 0.55);\n" +
+"ctx.fill();\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(W * 0.42, H * 0.78);\n" +
+"ctx.lineTo(W * 0.72, H * 0.30);\n" +
+"ctx.lineTo(W, H * 0.78);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = A(P.c2, 0.75);\n" +
+"ctx.fill();\n" +
+"\n" +
+"// Gunung utama di tengah\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(W * 0.08, H * 0.92);\n" +
+"ctx.lineTo(W * 0.50, H * 0.24);\n" +
+"ctx.lineTo(W * 0.92, H * 0.92);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = mix(P.bg, P.c1, 0.28);\n" +
+"ctx.fill();\n" +
+"// Salju di puncak utama\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(W * 0.415, H * 0.375);\n" +
+"ctx.lineTo(W * 0.50, H * 0.24);\n" +
+"ctx.lineTo(W * 0.585, H * 0.375);\n" +
+"ctx.lineTo(W * 0.535, H * 0.335);\n" +
+"ctx.lineTo(W * 0.50, H * 0.375);\n" +
+"ctx.lineTo(W * 0.465, H * 0.335);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fill();\n" +
+"\n" +
+"// Tanah di bawah\n" +
+"ctx.fillStyle = A(P.c1, 0.85);\n" +
+"ctx.fillRect(0, H * 0.90, W, H * 0.10);\n" +
+"\n" +
+"// Awan berjalan melingkar (wrap mulus)\n" +
+"for (var c = 0; c < 4; c++) {\n" +
+"  var ax = ((c * 0.30 + t * (0.6 + c * 0.12)) % 1.3 - 0.15) * W;\n" +
+"  var ay = H * (0.12 + (c % 3) * 0.07);\n" +
+"  var ar = W * (0.055 + (c % 2) * 0.02);\n" +
+"  ctx.fillStyle = A(P.c3, 0.82);\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(ax, ay, ar, 0, TAU);\n" +
+"  ctx.arc(ax + ar * 0.9, ay + ar * 0.12, ar * 0.72, 0, TAU);\n" +
+"  ctx.arc(ax - ar * 0.9, ay + ar * 0.12, ar * 0.66, 0, TAU);\n" +
+"  ctx.fill();\n" +
+"}"
+},
+{ id:'ocean', name:'Ombak Laut', desc:'Ombak berlapis bergulung, perahu kecil terayun di tengah laut.',
+code:
+"var g = ctx.createLinearGradient(0, 0, 0, H);\n" +
+"g.addColorStop(0, A(P.c2, 0.35));\n" +
+"g.addColorStop(0.45, P.bg);\n" +
+"g.addColorStop(1, P.bg);\n" +
+"ctx.fillStyle = g;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Matahari + awan kecil\n" +
+"ctx.beginPath();\n" +
+"ctx.arc(W * 0.80, H * 0.16, W * 0.06, 0, TAU);\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fill();\n" +
+"ctx.fillStyle = A(P.c3, 0.75);\n" +
+"for (var c = 0; c < 3; c++) {\n" +
+"  var ax = ((c * 0.38 + t * 0.5) % 1.25 - 0.12) * W;\n" +
+"  var ay = H * (0.10 + c * 0.06);\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(ax, ay, W * 0.045, 0, TAU);\n" +
+"  ctx.arc(ax + W * 0.05, ay, W * 0.035, 0, TAU);\n" +
+"  ctx.fill();\n" +
+"}\n" +
+"\n" +
+"// Ombak belakang\n" +
+"for (var lap = 0; lap < 2; lap++) {\n" +
+"  ctx.beginPath();\n" +
+"  ctx.moveTo(0, H);\n" +
+"  for (var x = 0; x <= W; x += 8) {\n" +
+"    var y = H * (0.52 + lap * 0.10) + sin(x * 0.007 + TAU * t * (1 + lap) + lap * 2.0) * H * 0.025;\n" +
+"    ctx.lineTo(x, y);\n" +
+"  }\n" +
+"  ctx.lineTo(W, H);\n" +
+"  ctx.closePath();\n" +
+"  ctx.fillStyle = A(lap ? P.c1 : P.c2, 0.45 + lap * 0.2);\n" +
+"  ctx.fill();\n" +
+"}\n" +
+"\n" +
+"// Perahu terayun\n" +
+"var bx = W * 0.5, by = H * 0.60 + sin(TAU * t * 2) * H * 0.018;\n" +
+"ctx.save();\n" +
+"ctx.translate(bx, by);\n" +
+"ctx.rotate(sin(TAU * t * 2 + 0.6) * 0.07);\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(-W * 0.11, 0);\n" +
+"ctx.lineTo(W * 0.11, 0);\n" +
+"ctx.lineTo(W * 0.07, H * 0.045);\n" +
+"ctx.lineTo(-W * 0.07, H * 0.045);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fill();\n" +
+"ctx.fillStyle = P.c1;\n" +
+"ctx.fillRect(-W * 0.006, -H * 0.13, W * 0.012, H * 0.13);\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(W * 0.012, -H * 0.125);\n" +
+"ctx.lineTo(W * 0.012, -H * 0.01);\n" +
+"ctx.lineTo(W * 0.085, -H * 0.01);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = P.c2;\n" +
+"ctx.fill();\n" +
+"ctx.restore();\n" +
+"\n" +
+"// Ombak depan menutup lambung\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(0, H);\n" +
+"for (var x2 = 0; x2 <= W; x2 += 8) {\n" +
+"  var y2 = H * 0.70 + sin(x2 * 0.010 - TAU * t * 2 + 1.2) * H * 0.022;\n" +
+"  ctx.lineTo(x2, y2);\n" +
+"}\n" +
+"ctx.lineTo(W, H);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = A(P.c1, 0.88);\n" +
+"ctx.fill();"
+},
+{ id:'rain', name:'Hujan Loop', desc:'Rintik hujan jatuh terus-menerus, genangan beriak di bawah.',
+code:
+"ctx.fillStyle = P.bg;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Awan gelap di atas\n" +
+"ctx.fillStyle = A(P.c2, 0.30);\n" +
+"ctx.fillRect(0, 0, W, H * 0.14);\n" +
+"for (var c = 0; c < 6; c++) {\n" +
+"  var ax = ((c * 0.20 + t * 0.4) % 1.2 - 0.1) * W;\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(ax, H * 0.10, W * 0.07, 0, TAU);\n" +
+"  ctx.fillStyle = A(P.c3, 0.16);\n" +
+"  ctx.fill();\n" +
+"}\n" +
+"\n" +
+"// Hujan — jatuh lalu mengulang dari atas\n" +
+"var N = 110;\n" +
+"var RND = rng(77);\n" +
+"var tab = [];\n" +
+"for (var j = 0; j < N * 2; j++) tab.push(RND());\n" +
+"ctx.strokeStyle = A(P.c3, 0.65);\n" +
+"ctx.lineWidth = Math.max(1.5, W * 0.0022);\n" +
+"for (var i = 0; i < N; i++) {\n" +
+"  var rx = tab[i * 2] * W;\n" +
+"  var ry = ((tab[i * 2 + 1] + t * (2 + (i % 3) * 0.4)) % 1) * H;\n" +
+"  ctx.beginPath();\n" +
+"  ctx.moveTo(rx, ry);\n" +
+"  ctx.lineTo(rx - W * 0.008, ry + H * 0.035);\n" +
+"  ctx.stroke();\n" +
+"}\n" +
+"\n" +
+"// Riak genangan\n" +
+"for (var r = 0; r < 7; r++) {\n" +
+"  var fase = (t * 2 + r * 0.37) % 1;\n" +
+"  var cxr = W * (0.10 + (r * 0.137) % 0.82);\n" +
+"  var cyr = H * (0.86 + (r % 3) * 0.045);\n" +
+"  ctx.beginPath();\n" +
+"  ctx.ellipse(cxr, cyr, W * 0.07 * fase, W * 0.018 * fase, 0, 0, TAU);\n" +
+"  ctx.strokeStyle = A(P.c1, 0.75 * (1 - fase));\n" +
+"  ctx.lineWidth = 2;\n" +
+"  ctx.stroke();\n" +
+"}\n" +
+"ctx.fillStyle = A(P.c2, 0.35);\n" +
+"ctx.fillRect(0, H * 0.84, W, H * 0.16);"
+},
+{ id:'night', name:'Bintang Malam', desc:'Bintang berkelip, bulan sabit, dan bintang jatuh melintas tiap putaran.',
+code:
+"var g = ctx.createLinearGradient(0, 0, 0, H);\n" +
+"g.addColorStop(0, P.bg);\n" +
+"g.addColorStop(1, A(P.c2, 0.28));\n" +
+"ctx.fillStyle = g;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Bintang berkelip\n" +
+"var N = 130;\n" +
+"var RND = rng(2024);\n" +
+"var tab = [];\n" +
+"for (var j = 0; j < N * 3; j++) tab.push(RND());\n" +
+"for (var i = 0; i < N; i++) {\n" +
+"  var sx = tab[i * 3] * W;\n" +
+"  var sy = tab[i * 3 + 1] * H * 0.82;\n" +
+"  var tw = 0.35 + 0.65 * (0.5 + 0.5 * sin(TAU * t * 2 + i * 1.37));\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(sx, sy, 1 + tab[i * 3 + 2] * Math.min(W, H) * 0.004, 0, TAU);\n" +
+"  ctx.fillStyle = A(P.c3, tw);\n" +
+"  ctx.fill();\n" +
+"}\n" +
+"\n" +
+"// Bulan sabit berayun pelan\n" +
+"var mx = W * 0.76, my = H * 0.20 + sin(TAU * t) * H * 0.012;\n" +
+"var mg = ctx.createRadialGradient(mx, my, 0, mx, my, W * 0.20);\n" +
+"mg.addColorStop(0, A(P.c3, 0.55));\n" +
+"mg.addColorStop(1, A(P.c3, 0));\n" +
+"ctx.fillStyle = mg;\n" +
+"ctx.fillRect(mx - W * 0.20, my - W * 0.20, W * 0.40, W * 0.40);\n" +
+"ctx.beginPath();\n" +
+"ctx.arc(mx, my, W * 0.075, 0, TAU);\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fill();\n" +
+"ctx.beginPath();\n" +
+"ctx.arc(mx + W * 0.038, my - W * 0.018, W * 0.062, 0, TAU);\n" +
+"ctx.fillStyle = P.bg;\n" +
+"ctx.fill();\n" +
+"\n" +
+"// Bintang jatuh — melintas sekali tiap putaran\n" +
+"var fx = W * (0.08 + 0.62 * t);\n" +
+"var fy = H * (0.10 + 0.30 * t);\n" +
+"var fa = sin(3.14159 * t);\n" +
+"ctx.strokeStyle = A(P.c3, fa * 0.9);\n" +
+"ctx.lineWidth = Math.max(2, W * 0.003);\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(fx, fy);\n" +
+"ctx.lineTo(fx - W * 0.11, fy - H * 0.045);\n" +
+"ctx.stroke();\n" +
+"\n" +
+"// Siluet bukit di bawah\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(0, H);\n" +
+"for (var x = 0; x <= W; x += 8) {\n" +
+"  ctx.lineTo(x, H * 0.88 + sin(x * 0.004 + 1.0) * H * 0.02);\n" +
+"}\n" +
+"ctx.lineTo(W, H);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = A(P.bg, 0.92);\n" +
+"ctx.fill();\n" +
+"ctx.fillStyle = A(P.c1, 0.5);\n" +
+"ctx.fillRect(0, H * 0.965, W, 2);"
+},
+{ id:'forest', name:'Hutan Loop', desc:'Pinus berlapis berkabut, kunang-kunang beterbangan di antara pohon.',
+code:
+"var g = ctx.createLinearGradient(0, 0, 0, H);\n" +
+"g.addColorStop(0, P.bg);\n" +
+"g.addColorStop(1, A(P.c2, 0.40));\n" +
+"ctx.fillStyle = g;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Cahaya di celah pohon\n" +
+"var cg = ctx.createRadialGradient(W * 0.5, H * 0.28, 0, W * 0.5, H * 0.28, W * 0.45);\n" +
+"cg.addColorStop(0, A(P.c3, 0.35 + 0.10 * sin(TAU * t * 2)));\n" +
+"cg.addColorStop(1, A(P.c3, 0));\n" +
+"ctx.fillStyle = cg;\n" +
+"ctx.fillRect(0, 0, W, H * 0.7);\n" +
+"\n" +
+"// Barisan pinus — 3 lapis kedalaman\n" +
+"for (var lap = 0; lap < 3; lap++) {\n" +
+"  var dasar = H * (0.62 + lap * 0.12);\n" +
+"  var tinggi = H * (0.30 + lap * 0.08);\n" +
+"  var jumlah = 5 + lap * 2;\n" +
+"  for (var p = 0; p < jumlah; p++) {\n" +
+"    var px = (p + 0.5) * W / jumlah + sin(TAU * t + p * 1.3 + lap) * W * 0.004;\n" +
+"    var pw = W * (0.055 + lap * 0.012);\n" +
+"    ctx.fillStyle = A(lap === 2 ? P.c1 : P.c2, 0.45 + lap * 0.25);\n" +
+"    ctx.fillRect(px - W * 0.006, dasar - tinggi * 0.18, W * 0.012, tinggi * 0.18);\n" +
+"    for (var ting = 0; ting < 3; ting++) {\n" +
+"      var ty = dasar - tinggi * 0.14 - ting * tinggi * 0.24;\n" +
+"      var twd = pw * (1 - ting * 0.24);\n" +
+"      ctx.beginPath();\n" +
+"      ctx.moveTo(px - twd, ty);\n" +
+"      ctx.lineTo(px, ty - tinggi * 0.34);\n" +
+"      ctx.lineTo(px + twd, ty);\n" +
+"      ctx.closePath();\n" +
+"      ctx.fill();\n" +
+"    }\n" +
+"  }\n" +
+"  // Kabut antar lapis\n" +
+"  ctx.fillStyle = A(P.c3, 0.08 + 0.04 * sin(TAU * t * 2 + lap * 2.0));\n" +
+"  ctx.fillRect(0, dasar - H * 0.05, W, H * 0.05);\n" +
+"}\n" +
+"ctx.fillStyle = A(P.bg, 0.65);\n" +
+"ctx.fillRect(0, H * 0.94, W, H * 0.06);\n" +
+"\n" +
+"// Kunang-kunang\n" +
+"var RND = rng(8);\n" +
+"var tab = [];\n" +
+"for (var j = 0; j < 36; j++) tab.push(RND());\n" +
+"for (var i = 0; i < 18; i++) {\n" +
+"  var fx = W * tab[i * 2] + cos(TAU * t * (1 + (i % 2)) + i * 2.0) * W * 0.03;\n" +
+"  var fy = H * (0.45 + tab[i * 2 + 1] * 0.42) + sin(TAU * t * 2 + i * 1.4) * H * 0.02;\n" +
+"  var nyala = 0.35 + 0.65 * (0.5 + 0.5 * sin(TAU * t * 3 + i * 2.3));\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(fx, fy, Math.min(W, H) * 0.006, 0, TAU);\n" +
+"  ctx.fillStyle = A(P.c3, nyala);\n" +
+"  ctx.fill();\n" +
+"}"
+},
+{ id:'snow', name:'Salju Loop', desc:'Salju turun lembut di atas bukit putih, cemara, dan rumah kecil hangat.',
+code:
+"var g = ctx.createLinearGradient(0, 0, 0, H);\n" +
+"g.addColorStop(0, P.bg);\n" +
+"g.addColorStop(1, A(P.c2, 0.45));\n" +
+"ctx.fillStyle = g;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Bukit salju\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(0, H);\n" +
+"for (var x = 0; x <= W; x += 8) {\n" +
+"  ctx.lineTo(x, H * 0.80 + sin(x * 0.005 + 0.8) * H * 0.025);\n" +
+"}\n" +
+"ctx.lineTo(W, H);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = A(P.c3, 0.92);\n" +
+"ctx.fill();\n" +
+"\n" +
+"// Cemara bersalju\n" +
+"for (var p = 0; p < 4; p++) {\n" +
+"  var px = W * (0.14 + p * 0.24);\n" +
+"  var dasar = H * (0.80 + (p % 2) * 0.03);\n" +
+"  var th = H * 0.26;\n" +
+"  ctx.fillStyle = A(P.c2, 0.9);\n" +
+"  for (var ting = 0; ting < 3; ting++) {\n" +
+"    var ty = dasar - ting * th * 0.26;\n" +
+"    var twd = W * 0.075 * (1 - ting * 0.25);\n" +
+"    ctx.beginPath();\n" +
+"    ctx.moveTo(px - twd, ty);\n" +
+"    ctx.lineTo(px, ty - th * 0.36);\n" +
+"    ctx.lineTo(px + twd, ty);\n" +
+"    ctx.closePath();\n" +
+"    ctx.fill();\n" +
+"  }\n" +
+"  ctx.fillStyle = A(P.c3, 0.85);\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(px, dasar - th * 0.92, W * 0.018, 0, TAU);\n" +
+"  ctx.fill();\n" +
+"}\n" +
+"\n" +
+"// Rumah kecil — jendela hangat berkedip lembut\n" +
+"var hx = W * 0.60, hy = H * 0.795;\n" +
+"ctx.fillStyle = mix(P.bg, P.c1, 0.35);\n" +
+"ctx.fillRect(hx - W * 0.075, hy - H * 0.09, W * 0.15, H * 0.09);\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(hx - W * 0.095, hy - H * 0.09);\n" +
+"ctx.lineTo(hx, hy - H * 0.145);\n" +
+"ctx.lineTo(hx + W * 0.095, hy - H * 0.09);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fill();\n" +
+"ctx.fillStyle = A(P.c1, 0.75 + 0.25 * sin(TAU * t * 2));\n" +
+"ctx.fillRect(hx - W * 0.022, hy - H * 0.062, W * 0.044, H * 0.038);\n" +
+"\n" +
+"// Salju turun — melayang + jatuh melingkar\n" +
+"var N = 95;\n" +
+"var RND = rng(404);\n" +
+"var tab = [];\n" +
+"for (var j = 0; j < N * 2; j++) tab.push(RND());\n" +
+"for (var i = 0; i < N; i++) {\n" +
+"  var fx = tab[i * 2] * W + sin(TAU * t * (1 + (i % 3) * 0.3) + i * 1.9) * W * 0.014;\n" +
+"  var fy = ((tab[i * 2 + 1] + t * (0.7 + (i % 4) * 0.15)) % 1) * H;\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(fx, fy, 1.5 + tab[(i * 5) % (N * 2)] * Math.min(W, H) * 0.005, 0, TAU);\n" +
+"  ctx.fillStyle = A(P.c3, 0.55 + tab[i * 2] * 0.4);\n" +
+"  ctx.fill();\n" +
+"}"
 }
 ];
 
@@ -768,8 +1330,87 @@ var state = {
   playing: true,
   playhead: 0,      // seconds inside the loop
   ast: null,
-  recording: false
+  recording: false,
+  customMode: false,
+  customCount: 0
 };
+var BLANK_CODE =
+"// Buat Kode Sendiri — kanvas kosong\n" +
+"// Dijalankan tiap frame sebagai draw(ctx, t, W, H)\n" +
+"// t = 0..1 (posisi loop), P.bg / P.c1 / P.c2 / P.c3 = warna palet\n" +
+"// Trik loop mulus: pakai sin(TAU * t * k), k bilangan bulat.\n" +
+"// Klik snippet di panel kuning untuk contoh siap pakai.\n" +
+"\n" +
+"ctx.fillStyle = P.bg;\n" +
+"ctx.fillRect(0, 0, W, H);\n" +
+"\n" +
+"// Tulis gambarmu di bawah ini…\n";
+var SNIPPETS = {
+  lingkaran:
+"\n// Lingkaran berdenyut di tengah\n" +
+"var rB = Math.min(W, H) * (0.18 + 0.04 * sin(TAU * t * 2));\n" +
+"ctx.beginPath();\n" +
+"ctx.arc(W / 2, H / 2, rB, 0, TAU);\n" +
+"ctx.fillStyle = P.c1;\n" +
+"ctx.fill();\n",
+  gelombang:
+"\n// Gelombang mengalir di bawah\n" +
+"ctx.beginPath();\n" +
+"ctx.moveTo(0, H);\n" +
+"for (var gx = 0; gx <= W; gx += 8) {\n" +
+"  var gy = H * 0.72 + sin(gx * 0.008 + TAU * t * 2) * H * 0.04;\n" +
+"  ctx.lineTo(gx, gy);\n" +
+"}\n" +
+"ctx.lineTo(W, H);\n" +
+"ctx.closePath();\n" +
+"ctx.fillStyle = A(P.c2, 0.85);\n" +
+"ctx.fill();\n",
+  partikel:
+"\n// Partikel beterbangan ke atas\n" +
+"var RNDp = rng(123);\n" +
+"var tabP = [];\n" +
+"for (var jp = 0; jp < 40; jp++) tabP.push(RNDp());\n" +
+"for (var ip = 0; ip < 40; ip++) {\n" +
+"  var px = tabP[ip] * W + sin(TAU * t + ip) * 12;\n" +
+"  var py = ((tabP[(ip * 3) % 40] + t * 0.6) % 1) * H;\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(px, H - py, 3 + tabP[ip] * 5, 0, TAU);\n" +
+"  ctx.fillStyle = A(ip % 2 ? P.c1 : P.c3, 0.85);\n" +
+"  ctx.fill();\n" +
+"}\n",
+  gradien:
+"\n// Latar gradien (gambar ulang latar di posisi ini)\n" +
+"var gg = ctx.createLinearGradient(0, 0, W, H);\n" +
+"gg.addColorStop(0, P.c2);\n" +
+"gg.addColorStop(1, P.bg);\n" +
+"ctx.fillStyle = gg;\n" +
+"ctx.fillRect(0, 0, W, H);\n",
+  bintang:
+"\n// Bintang berkelip\n" +
+"var RNDs = rng(55);\n" +
+"var tabS = [];\n" +
+"for (var js = 0; js < 50; js++) { tabS.push(RNDs()); tabS.push(RNDs()); }\n" +
+"for (var is2 = 0; is2 < 50; is2++) {\n" +
+"  var tw2 = 0.4 + 0.6 * (0.5 + 0.5 * sin(TAU * t * 2 + is2 * 1.7));\n" +
+"  ctx.beginPath();\n" +
+"  ctx.arc(tabS[is2 * 2] * W, tabS[is2 * 2 + 1] * H, 2.2, 0, TAU);\n" +
+"  ctx.fillStyle = A(P.c3, tw2);\n" +
+"  ctx.fill();\n" +
+"}\n",
+  teks:
+"\n// Teks di tengah\n" +
+"ctx.font = '800 ' + Math.round(W * 0.14) + 'px Plus Jakarta Sans, sans-serif';\n" +
+"ctx.textAlign = 'center';\n" +
+"ctx.textBaseline = 'middle';\n" +
+"ctx.fillStyle = P.c3;\n" +
+"ctx.fillText('HALO!', W / 2, H / 2);\n" +
+"ctx.textAlign = 'left';\n"
+};
+function currentId(){
+  if(state.customMode) return 'buatan-sendiri';
+  var p = PRESETS[state.presetIdx];
+  return p ? p.id : 'buatan-sendiri';
+}
 
 /* ================= interpreter kode gerak =================
    Kode dari editor di-parse jadi pohon sintaks (AST) lalu dijalankan
@@ -1218,10 +1859,12 @@ document.getElementById('fpsSel').addEventListener('change', function(e){
 
 /* ================= presets UI ================= */
 var presetGrid = document.getElementById('presetGrid');
-PRESETS.forEach(function(p, idx){
+var customPresetGrid = document.getElementById('customPresetGrid');
+function createPresetButton(p, idx){
   var btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'preset';
+  btn.setAttribute('data-idx', String(idx));
   btn.setAttribute('aria-pressed', idx === 0 ? 'true' : 'false');
   var th = document.createElement('canvas');
   th.width = 160; th.height = 120;
@@ -1229,30 +1872,52 @@ PRESETS.forEach(function(p, idx){
   var nm = document.createElement('span');
   nm.className = 'pname'; nm.textContent = p.name;
   btn.appendChild(nm);
-  btn.addEventListener('click', function(){ selectPreset(idx); });
-  presetGrid.appendChild(btn);
-  // gambar thumbnail statis di t=0.3
+  btn.addEventListener('click', function(){ selectPreset(parseInt(btn.getAttribute('data-idx'), 10)); });
+  (p.custom ? customPresetGrid : presetGrid).appendChild(btn);
   try {
     var ast = compile(p.code);
     var tc = th.getContext('2d');
     tc.fillStyle = state.palette.bg; tc.fillRect(0,0,160,120);
     execCode(ast, tc, 0.3, 160, 120, state.palette);
   } catch(e){ /* abaikan */ }
-});
+  return btn;
+}
+PRESETS.forEach(function(p, idx){ createPresetButton(p, idx); });
+function syncPresetSelection(){
+  var all = document.querySelectorAll('.preset');
+  for(var i=0;i<all.length;i++){
+    var idx = parseInt(all[i].getAttribute('data-idx'), 10);
+    all[i].setAttribute('aria-pressed', (!state.customMode && idx===state.presetIdx) ? 'true':'false');
+  }
+  document.getElementById('customModeBtn').setAttribute('aria-pressed', state.customMode ? 'true':'false');
+  document.getElementById('customPanel').classList.toggle('on', state.customMode);
+  document.getElementById('customPresetHead').style.display = customPresetGrid.children.length ? 'flex' : 'none';
+}
 function selectPreset(idx){
   state.presetIdx = idx;
-  var btns = presetGrid.querySelectorAll('.preset');
-  for(var i=0;i<btns.length;i++) btns[i].setAttribute('aria-pressed', i===idx ? 'true':'false');
+  state.customMode = false;
   var p = PRESETS[idx];
   document.getElementById('curName').textContent = p.name;
   document.getElementById('curDesc').textContent = p.desc;
   editor.value = p.code;
+  syncPresetSelection();
   tryApply(p.code, true);
   toast('Preset "' + p.name + '" dimuat');
 }
+function enterCustomMode(keepCode){
+  state.customMode = true;
+  document.getElementById('curName').textContent = 'Buat Kode Sendiri';
+  document.getElementById('curDesc').textContent = 'Kanvas kosong — tulis kode draw(ctx, t, W, H) dari nol, preview langsung jalan.';
+  if(!keepCode){ editor.value = BLANK_CODE; }
+  syncPresetSelection();
+  tryApply(editor.value, true);
+  toast('Mode Buat Kode Sendiri — mulai dari kanvas kosong');
+  editor.focus();
+}
 function refreshThumbs(){
-  var thumbs = presetGrid.querySelectorAll('canvas');
+  var thumbs = document.querySelectorAll('.preset canvas');
   PRESETS.forEach(function(p, idx){
+    if(!thumbs[idx]) return;
     try {
       var ast = compile(p.code);
       var tc = thumbs[idx].getContext('2d');
@@ -1261,6 +1926,45 @@ function refreshThumbs(){
     } catch(e){}
   });
 }
+
+/* ================= custom mode UI ================= */
+document.getElementById('customModeBtn').addEventListener('click', function(){ enterCustomMode(false); });
+document.getElementById('blankBtn').addEventListener('click', function(){
+  editor.value = BLANK_CODE;
+  tryApply(BLANK_CODE, true);
+  toast('Kanvas dikosongkan — mulai lagi dari nol');
+});
+document.getElementById('snippetRow').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-snippet]'); if(!b) return;
+  var snip = SNIPPETS[b.getAttribute('data-snippet')]; if(!snip) return;
+  if(!state.customMode) enterCustomMode(true);
+  var s = editor.selectionStart || editor.value.length;
+  var en = editor.selectionEnd || s;
+  editor.value = editor.value.substring(0, s) + snip + editor.value.substring(en);
+  editor.selectionStart = editor.selectionEnd = s + snip.length;
+  tryApply(editor.value, true);
+  editor.focus();
+  toast('Snippet ditambahkan — preview diperbarui');
+});
+document.getElementById('saveCustomBtn').addEventListener('click', function(){
+  var codeNow = editor.value;
+  try { compile(codeNow); } catch(err){ toast('Kode masih error — perbaiki dulu sebelum disimpan'); return; }
+  var nameInput = document.getElementById('customName');
+  state.customCount++;
+  var nm = (nameInput.value || '').trim() || ('Preset Saya ' + state.customCount);
+  var p = { id:'custom-' + Date.now(), name:nm, desc:'Preset buatan sendiri di Mode Buat Kode Sendiri.', code:codeNow, custom:true };
+  PRESETS.push(p);
+  var idx = PRESETS.length - 1;
+  createPresetButton(p, idx);
+  nameInput.value = '';
+  state.customMode = false;
+  state.presetIdx = idx;
+  document.getElementById('curName').textContent = p.name;
+  document.getElementById('curDesc').textContent = p.desc;
+  syncPresetSelection();
+  refreshThumbs();
+  toast('Tersimpan jadi preset "' + nm + '" — klik Rekam Video untuk ekspor');
+});
 
 /* ================= palette UI ================= */
 var swWrap = document.getElementById('swatches');
@@ -1369,6 +2073,7 @@ editor.addEventListener('keydown', function(e){
 });
 document.getElementById('applyBtn').addEventListener('click', function(){ tryApply(editor.value, false); });
 document.getElementById('resetBtn').addEventListener('click', function(){
+  if(state.customMode){ editor.value = BLANK_CODE; tryApply(editor.value, true); toast('Kode dikembalikan ke kanvas kosong'); return; }
   editor.value = PRESETS[state.presetIdx].code;
   tryApply(editor.value, true);
   toast('Kode dikembalikan ke preset awal');
@@ -1386,7 +2091,7 @@ function fallbackCopy(){
 }
 document.getElementById('dlCodeBtn').addEventListener('click', function(){
   var blob = new Blob([editor.value], { type:'text/javascript' });
-  downloadBlob(blob, 'loop-' + PRESETS[state.presetIdx].id + '.js');
+  downloadBlob(blob, 'loop-' + currentId() + '.js');
   toast('File kode diunduh');
 });
 
@@ -1451,7 +2156,7 @@ recBtn.addEventListener('click', function(){
     document.getElementById('recBadge').classList.remove('on');
     document.getElementById('recProgress').classList.remove('on');
     var blob = new Blob(chunks, { type: mime || 'video/webm' });
-    downloadBlob(blob, 'loop-studio-' + PRESETS[state.presetIdx].id + '.' + ext);
+    downloadBlob(blob, 'loop-studio-' + currentId() + '.' + ext);
     toast('Video loop diunduh (' + ext.toUpperCase() + ', ' + state.duration.toFixed(1) + ' dtk)');
   };
 
