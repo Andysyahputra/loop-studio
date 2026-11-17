@@ -318,6 +318,41 @@
       .sf-bg-row input[type="color"].unset{ opacity:.4; }
       .sf-bg-row .theme-hint{ color:var(--accent-dark); font-weight:600; }
       .sf-bg-row .mini-btn{ font:inherit; font-size:11px; font-weight:600; padding:3px 8px; border:1px solid var(--line); border-radius:6px; background:var(--panel2); color:var(--muted); cursor:pointer; }
+      .sf-timing-status{ font-size:12.5px; line-height:1.55; border:1px solid var(--line); border-radius:10px; padding:9px 11px; margin-top:4px; background:var(--panel2); color:var(--muted); }
+      .sf-timing-status b{ color:var(--ink); }
+      .sf-timing-status.real{ border-color:#BBF7D0; background:#F0FDF4; }
+      .sf-timing-status.real b{ color:#15803D; }
+      .sf-timing-status.est b{ color:#B45309; }
+      #sfPanel textarea.sf-srt{ font-family:"JetBrains Mono",monospace; font-size:11.5px; }
+      .sf-file-lab{ cursor:pointer; }
+      /* ---------- mode caption (animasi caption mandiri) ---------- */
+      #capPanel{ display:none; }
+      .side.cap-on > *:not(#capPanel){ display:none !important; }
+      .side.cap-on #capPanel{ display:block; }
+      #capPanel h2 + .sf-lab{ margin-top:2px; }
+      #capPanel textarea{
+        width:100%; font:inherit; font-size:13.5px; line-height:1.55; color:var(--ink);
+        background:var(--panel2); border:1px solid var(--line); border-radius:10px;
+        padding:10px 12px; resize:vertical;
+      }
+      #capPanel textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+      #capPanel textarea.sf-srt{ font-family:"JetBrains Mono",monospace; font-size:11.5px; }
+      .cap-bg-ctl{ margin-top:8px; }
+      /* ---------- panduan safe-area 9:16 (overlay pratinjau, tidak ikut terekspor) ---------- */
+      .safe-guide{ position:absolute; inset:0; display:none; pointer-events:none; line-height:1.35; z-index:3; border-radius:10px; overflow:hidden; }
+      .safe-guide.on{ display:block; }
+      .sg-zone{ position:absolute; background:rgba(220,38,38,.10); }
+      .sg-zone span, .sg-band span{ position:absolute; font-size:10px; font-weight:700; padding:1px 5px; border-radius:4px; white-space:nowrap; }
+      .sg-zone span{ color:#B91C1C; background:rgba(255,255,255,.88); }
+      .sg-top{ top:0; left:0; right:0; height:12%; border-bottom:1px dashed rgba(220,38,38,.6); }
+      .sg-top span{ left:6px; top:6px; }
+      .sg-bottom{ bottom:0; left:0; right:0; height:14.6%; border-top:1px dashed rgba(220,38,38,.6); }
+      .sg-bottom span{ left:6px; bottom:6px; }
+      .sg-rail{ top:38%; right:0; width:13%; height:47.4%; border-left:1px dashed rgba(220,38,38,.6); }
+      .sg-rail span{ right:4px; top:6px; }
+      .sg-center{ position:absolute; top:0; bottom:0; left:10%; right:10%; border-left:1px dashed rgba(37,99,235,.55); border-right:1px dashed rgba(37,99,235,.55); }
+      .sg-band{ position:absolute; left:10%; right:10%; top:62%; height:8%; border:1.5px dashed rgba(22,163,74,.85); background:rgba(22,163,74,.08); border-radius:6px; }
+      .sg-band span{ top:-9px; left:8px; color:#15803D; background:#FFFFFF; padding:0 5px; }
 
       /* ---------- tutorial / cara pakai ---------- */
       .btn-help{ font-weight:700; }
@@ -406,6 +441,7 @@
         <div class="seg" id="modeSeg" role="group" aria-label="Mode studio">
           <button type="button" data-mode="loop" aria-pressed="true">Loop</button>
           <button type="button" data-mode="short" aria-pressed="false">Short Form</button>
+          <button type="button" data-mode="caption" aria-pressed="false">Caption</button>
         </div>
       </div>
       <div class="group">
@@ -469,21 +505,6 @@ Yang beda cuma saldo</textarea>
           <button class="btn sf-full" id="sfExampleBtn" type="button">Isi Contoh: Gajian vs Tanggal Tua</button>
           <p class="sf-stats" id="sfStats"></p>
 
-          <h2><span class="step">CC</span> Caption animation</h2>
-          <label class="sf-lab" for="sfCapStyle">Gaya caption</label>
-          <select id="sfCapStyle" style="width:100%">
-            <option value="karaoke" selected>Karaoke — kata menyala</option>
-            <option value="pop">Pop — kata muncul memantul</option>
-            <option value="typewriter">Typewriter — diketik huruf per huruf</option>
-            <option value="fadeup">Fade Up — naik &amp; memudar masuk</option>
-            <option value="boldbox">Bold Box — teks di dalam kotak</option>
-          </select>
-          <label class="sf-lab">Posisi caption</label>
-          <div class="seg" id="sfPosSeg" role="group" aria-label="Posisi caption">
-            <button type="button" data-pos="top" aria-pressed="false">Atas</button>
-            <button type="button" data-pos="mid" aria-pressed="true">Tengah</button>
-            <button type="button" data-pos="bot" aria-pressed="false">Bawah</button>
-          </div>
           <label class="sf-lab" for="sfVoSel">Voice over — pratinjau suara browser</label>
           <select id="sfVoSel" style="width:100%">
             <option value="off" selected>Tanpa voice over</option>
@@ -506,10 +527,99 @@ Yang beda cuma saldo</textarea>
           </div>
           <p class="sf-note">Tiap potongan di bawah juga bisa diatur latarnya sendiri: <b>warna solid</b>, <b>gradien 2 warna</b>, atau salah satu <b>Preset Loop</b> — plus <b>warna teks</b> di atasnya. Kalau dibiarkan <b>Otomatis</b>, latar dibuat dari kata-katanya: laut/pantai jadi latar laut, hutan jadi hutan, malam/bintang jadi langit malam, kota jadi kota, senja jadi sunset, hujan jadi hujan, dan seterusnya. Tidak ada kata yang dikenali? Pakai latar default yang sudah ada. <b>Latar manual selalu menang atas otomatis.</b></p>
           <div id="sfSegList"></div>
+          <p class="sf-note">Ekspor video pakai tombol <b>Rekam Video</b> di toolbar — durasinya otomatis mengikuti total durasi short ini. File video tidak membawa audio voice over (VO hanya pratinjau suara di browser). Butuh caption animasi? Pakai <b>Mode Caption</b> di toolbar — fitur caption sekarang berdiri sendiri di sana.</p>
+        </div>
+
+        <!-- ======= MODE CAPTION — ANIMASI CAPTION MANDIRI (hanya tampil di Mode Caption) ======= -->
+        <div id="capPanel">
+          <h2><span class="step">CC</span> Animasi Caption <span class="hint">teks · timing kata · gaya</span></h2>
+          <label class="sf-lab" for="capText">Teks caption — satu baris = satu potongan</label>
+          <textarea id="capText" rows="6">Halo semuanya, selamat datang kembali
+Hari ini kita belajar hal yang baru
+Jangan lupa tonton sampai habis ya</textarea>
+          <p class="sf-stats" id="capStats"></p>
+
+          <label class="sf-lab">Timing per kata</label>
+          <p class="sf-timing-status est" id="capTimingStatus"><b>Timing perkiraan</b> — kata dibagi menurut panjang hurufnya, belum diukur dari suara asli.</p>
+          <label class="sf-lab" for="capSrtPaste">Impor SRT — satu kata per cue (hasil Whisper / transkripsi asli)</label>
+          <textarea class="sf-srt" id="capSrtPaste" rows="4" placeholder="1&#10;00:00:00,000 --> 00:00:00,420&#10;Halo&#10;&#10;2&#10;00:00:00,420 --> 00:00:00,610&#10;semuanya,"></textarea>
           <div class="row-btns">
-            <button class="btn" id="sfSrtBtn" type="button">Unduh SRT</button>
+            <button class="btn" id="capSrtImportBtn" type="button">Impor SRT dari Teks</button>
+            <label class="btn sf-file-lab" for="capSrtFile">Upload File .srt</label>
+            <input type="file" id="capSrtFile" accept=".srt,.vtt,text/plain" style="display:none" />
           </div>
-          <p class="sf-note">Ekspor video pakai tombol <b>Rekam Video</b> di toolbar — durasinya otomatis mengikuti total durasi short ini. File video tidak membawa audio voice over (VO hanya pratinjau suara di browser); pakai file SRT untuk caption saat mengedit di aplikasi lain.</p>
+          <label class="sf-lab" for="capVoSel">Suara untuk pengukuran timing</label>
+          <select id="capVoSel" style="width:100%">
+            <option value="wanita">Suara wanita (pitch tinggi)</option>
+            <option value="pria">Suara pria (pitch rendah)</option>
+            <option value="standar" selected>Suara standar</option>
+          </select>
+          <button class="btn sf-full" id="capMeasureBtn" type="button">Ukur Timing Kata dari Voice Over</button>
+          <button class="btn sf-full" id="capTimingResetBtn" type="button" style="display:none">Hapus Timing Asli — Kembali ke Perkiraan</button>
+          <p class="sf-note">Tombol ukur memutar teksnya sekali dan menangkap <i>event boundary</i> per kata dari Web Speech — timing yang tersimpan adalah timing kata yang sebenarnya, bukan bagi rata. SRT yang diimpor diskalakan proporsional mengikuti total durasi caption ini. Timing asli gugur otomatis kalau teksnya berubah.</p>
+
+          <h2><span class="step">ST</span> Gaya caption</h2>
+          <label class="sf-lab" for="capStyleSel">Gaya animasi</label>
+          <select id="capStyleSel" style="width:100%">
+            <option value="karaoke" selected>Karaoke — kata menyala</option>
+            <option value="pop">Pop — kata muncul memantul</option>
+            <option value="typewriter">Typewriter — diketik huruf per huruf</option>
+            <option value="fadeup">Fade Up — naik &amp; memudar masuk</option>
+            <option value="boldbox">Bold Box — teks di dalam kotak</option>
+          </select>
+          <label class="sf-lab">Posisi caption</label>
+          <div class="seg" id="capPosSeg" role="group" aria-label="Posisi caption">
+            <button type="button" data-pos="top" aria-pressed="false">Atas</button>
+            <button type="button" data-pos="mid" aria-pressed="true">Tengah</button>
+            <button type="button" data-pos="bot" aria-pressed="false">Bawah</button>
+          </div>
+          <label class="sf-lab">Kata per halaman — caption tampil berkelompok, bukan satu baris panjang</label>
+          <div class="seg" id="capPageSeg" role="group" aria-label="Jumlah kata per halaman caption">
+            <button type="button" data-pages="1" aria-pressed="false">1 kata</button>
+            <button type="button" data-pages="2" aria-pressed="false">2 kata</button>
+            <button type="button" data-pages="3" aria-pressed="true">3 kata</button>
+            <button type="button" data-pages="4" aria-pressed="false">4 kata</button>
+          </div>
+          <div class="ctl" style="margin:16px 0 4px">
+            <div class="lab"><label for="capCapSize">Ukuran font caption</label><output id="capCapSizeOut">100%</output></div>
+            <input type="range" id="capCapSize" min="70" max="140" step="5" value="100" />
+          </div>
+          <div class="color-rows">
+            <label class="color-row"><input type="color" id="capCapColor" value="#FFFFFF" /> Warna teks <span class="hex mono" id="capCapColorHex">#FFFFFF</span></label>
+            <label class="color-row"><input type="color" id="capCapActive" value="#FFC531" /> Warna kata aktif <span class="hex mono" id="capCapActiveHex">#FFC531</span></label>
+          </div>
+          <label class="sf-lab">Safe-area 9:16 (TikTok / Reels)</label>
+          <button class="btn sf-full" id="capSafeBtn" type="button" aria-pressed="false" style="margin-top:0">Tampilkan Panduan Safe-Area</button>
+          <p class="sf-note">Posisi <b>Tengah</b> ada di band aman ±62–70% dari atas, teks dibatasi lebar tengah 80%, dan posisi <b>Bawah</b> menyisakan ±280px dari tepi bawah (1080×1920) — jauh dari UI platform. Panduan hanya tampil di pratinjau, tidak ikut terekspor.</p>
+
+          <h2><span class="step">BG</span> Latar</h2>
+          <label class="sf-lab" for="capBgType">Jenis latar</label>
+          <select id="capBgType" style="width:100%">
+            <option value="solid" selected>Warna solid</option>
+            <option value="grad">Gradien 2 warna</option>
+            <option value="preset">Preset Loop</option>
+          </select>
+          <div class="cap-bg-ctl" id="capBgSolidRow">
+            <div class="color-rows">
+              <label class="color-row"><input type="color" id="capBgSolid" value="#1C1A17" /> Warna latar <span class="hex mono" id="capBgSolidHex">#1C1A17</span></label>
+            </div>
+          </div>
+          <div class="cap-bg-ctl" id="capBgGradRow" style="display:none">
+            <div class="color-rows">
+              <label class="color-row"><input type="color" id="capBgG1" value="#20638F" /> Warna atas <span class="hex mono" id="capBgG1Hex">#20638F</span></label>
+              <label class="color-row"><input type="color" id="capBgG2" value="#0B2A4A" /> Warna bawah <span class="hex mono" id="capBgG2Hex">#0B2A4A</span></label>
+            </div>
+          </div>
+          <div class="cap-bg-ctl" id="capBgPresetRow" style="display:none">
+            <select id="capBgPreset" style="width:100%" aria-label="Preset Loop untuk latar"></select>
+          </div>
+
+          <h2><span class="step">EX</span> Ekspor</h2>
+          <div class="row-btns">
+            <button class="btn" id="capSrtBtn" type="button">Unduh SRT</button>
+            <button class="btn" id="capVttBtn" type="button">Unduh VTT</button>
+          </div>
+          <p class="sf-note">Ekspor video pakai tombol <b>Rekam Video</b> di toolbar — caption terbakar (burn-in) di dalam video dan durasinya otomatis mengikuti total durasi caption ini. File <b>SRT / VTT</b> dibuat dari token kata yang sama (dikelompokkan per halaman) untuk dipakai saat mengedit di aplikasi lain.</p>
         </div>
 
         <h2><span class="step">01</span> Preset gerakan <span class="hint">klik buat ganti</span></h2>
@@ -559,6 +669,13 @@ Yang beda cuma saldo</textarea>
           <div class="canvas-wrap">
             <canvas id="view" width="1080" height="1920"></canvas>
             <span class="rec-badge" id="recBadge"><span class="rec-dot"></span> MEMUTAR &amp; MEREKAM · <span id="recPct">0%</span></span>
+            <div class="safe-guide" id="safeGuide" aria-hidden="true">
+              <div class="sg-zone sg-top"><span>UI atas — judul &amp; pencarian</span></div>
+              <div class="sg-zone sg-bottom"><span>UI bawah ±280px — caption, CTA, audio</span></div>
+              <div class="sg-zone sg-rail"><span>Rail kanan</span></div>
+              <div class="sg-center"></div>
+              <div class="sg-band"><span>Band caption aman 62–70%</span></div>
+            </div>
           </div>
         </div>
         <div class="transport">
@@ -3537,6 +3654,7 @@ var state = {
 };
 function effectiveDuration(){
   if(state.mode === 'short' && typeof sf !== 'undefined' && sf && sf.timeline) return sf.timeline.total;
+  if(state.mode === 'caption' && typeof cap !== 'undefined' && cap && cap.timeline) return cap.timeline.total;
   return state.duration;
 }
 var BLANK_CODE =
@@ -3976,20 +4094,29 @@ function render(){
     sf.ph = eff > 0 ? (state.playhead % eff) : 0;
     sfItem = sfItemAt(sf.ph);
   }
+  var capItem = null;
+  if(state.mode === 'caption' && typeof cap !== 'undefined' && cap && cap.timeline){
+    cap.ph = eff > 0 ? (state.playhead % eff) : 0;
+    capItem = capItemAt(cap.ph);
+  }
   try {
-    var sfBgDone = false;
-    if(sfItem){ try { sfBgDone = drawSfSegBg(sfItem, t); } catch(e){ sfBgDone = false; } }
-    if(sfItem && sf.bg === 'beat'){
-      drawBeatScene(sfItem, sfBgDone);
-    } else if(!sfBgDone) {
-      execCode(state.ast, ctx, t, canvas.width, canvas.height, state.palette);
+    if(capItem){
+      if(!drawCapBg(t)) execCode(state.ast, ctx, t, canvas.width, canvas.height, state.palette);
+    } else {
+      var sfBgDone = false;
+      if(sfItem){ try { sfBgDone = drawSfSegBg(sfItem, t); } catch(e){ sfBgDone = false; } }
+      if(sfItem && sf.bg === 'beat'){
+        drawBeatScene(sfItem, sfBgDone);
+      } else if(!sfBgDone) {
+        execCode(state.ast, ctx, t, canvas.width, canvas.height, state.palette);
+      }
     }
   } catch(e){
     errBox.textContent = 'Error saat menggambar: ' + e.message;
     errBox.classList.add('on');
     state.playing = false; syncPlayIcon();
   }
-  if(sfItem){ try { drawCaption(sfItem); } catch(e){} }
+  if(capItem){ try { drawCaption(capItem); } catch(e){} }
   document.getElementById('timeNow').textContent = state.playhead.toFixed(2);
   document.getElementById('timeDur').textContent = eff.toFixed(2);
   var scrub = document.getElementById('scrub');
@@ -4400,7 +4527,7 @@ recBtn.addEventListener('click', function(){
     document.getElementById('recProgress').classList.remove('on');
     var blob = new Blob(chunks, { type: mime || 'video/webm' });
     downloadBlob(blob, 'loop-studio-' + currentId() + '.' + ext);
-    toast((state.mode === 'short' ? 'Video short form diunduh (' : 'Video loop diunduh (') + ext.toUpperCase() + ', ' + effectiveDuration().toFixed(1) + ' dtk)');
+    toast(((state.mode === 'short' ? 'Video short form' : (state.mode === 'caption' ? 'Video caption' : 'Video loop')) + ' diunduh (') + ext.toUpperCase() + ', ' + effectiveDuration().toFixed(1) + ' dtk)');
   };
 
   rec.start(200);
@@ -4476,8 +4603,6 @@ var SF_EXAMPLE = {
 };
 var sf = {
   bg: 'preset',          // 'preset' | 'beat'
-  capStyle: 'karaoke',
-  capPos: 'mid',         // 'top' | 'mid' | 'bot'
   vo: 'off',             // 'off' | 'wanita' | 'pria' | 'standar'
   overrides: {},         // indeks potongan -> scene id manual
   bgCfg: {},             // indeks potongan -> { type:'auto'|'solid'|'grad'|'preset', c1, c2, preset, text }
@@ -4492,7 +4617,6 @@ var sfEls = {
   cta: document.getElementById('sfCta'),
   stats: document.getElementById('sfStats'),
   segList: document.getElementById('sfSegList'),
-  capStyle: document.getElementById('sfCapStyle'),
   vo: document.getElementById('sfVoSel')
 };
 var SF_SCENES = [
@@ -5187,68 +5311,247 @@ function drawBeatScene(item, bgDone){
   ctx.restore();
 }
 
-/* ---------- caption animation ---------- */
-function drawCaption(item){
-  if(!item || !item.text) return;
-  var beat = (sf.bg === 'beat');
-  if(beat && item.kind === 'hook') return;              // judul hook sudah jadi scene
-  if(beat && item.scene === 'payoff') return;           // teks payoff sudah jadi scene
-  var W = canvas.width, H = canvas.height;
-  var minD = Math.min(W, H);
-  var local = Math.max(0, sf.ph - item.start);
-  var prog = clamp(local / item.dur, 0, 1);
-  var style = beat ? 'karaoke' : sf.capStyle;           // Cerita Beat: gaya referensi
-  var pos = beat ? 'mid' : sf.capPos;
-  var fs = Math.round(minD * 0.066);
-  var maxW = W * 0.88;
-  var maxLines = beat ? 2 : 3;
-  var cy = pos === 'top' ? H * 0.15 : (pos === 'bot' ? H * 0.85 : H * 0.47);
-  var words = item.text.split(/\s+/).filter(Boolean);
-  if(!words.length) return;
-  var tcfg = (item.kind === 'seg') ? sf.bgCfg[item.idx] : null;
-  var baseCol = (tcfg && tcfg.text) ? tcfg.text : '#FFFFFF';
-  var dimCol = (tcfg && tcfg.text) ? sfHexA(tcfg.text, 0.45) : 'rgba(255,255,255,0.45)';
-  ctx.save();
-  ctx.textBaseline = 'middle';
-
-  if(style === 'typewriter'){
-    var nCh = Math.floor(prog * item.text.length);
-    var shown = item.text.substring(0, nCh);
-    var tLines = wrapLines(shown || ' ', fs, maxW).slice(0, maxLines);
-    sfShadow(true, fs);
-    ctx.font = '800 ' + fs + 'px "Plus Jakarta Sans", sans-serif';
-    ctx.textAlign = 'center'; ctx.fillStyle = baseCol;
-    var lhT = fs * 1.18;
-    var y0T = cy - (tLines.length - 1) * lhT / 2;
-    tLines.forEach(function(ln, i){ ctx.fillText(ln, W / 2, y0T + i * lhT); });
-    if(nCh > 0 && Math.floor(local * 2.4) % 2 === 0){
-      var lastLn = tLines[tLines.length - 1] || '';
-      var lwLast = ctx.measureText(lastLn).width;
-      sfShadow(false, 0);
-      ctx.fillStyle = '#FFC531';
-      ctx.fillRect(W / 2 + lwLast / 2 + fs * 0.10, y0T + (tLines.length - 1) * lhT - fs * 0.42, fs * 0.14, fs * 0.84);
-    }
-    ctx.restore();
-    ctx.textAlign = 'left';
-    return;
+/* ---------- timing kata: token asli (SRT / voice over) atau perkiraan ---------- */
+function capText(){
+  return capEls.text.value.trim();
+}
+function capTimingStatusUpdate(){
+  var el = capEls.timingStatus; if(!el) return;
+  var reset = capEls.timingResetBtn;
+  if(cap.tokens && cap.tokens.length){
+    el.className = 'sf-timing-status real';
+    el.innerHTML = '<b>Timing asli</b> — ' + cap.tokens.length + ' kata ' + (cap.timingSrc === 'vo' ? 'diukur dari voice over (event boundary Web Speech)' : 'dari SRT yang diimpor') + '. Kata muncul persis mengikuti timing ini.';
+    if(reset) reset.style.display = '';
+  } else {
+    el.className = 'sf-timing-status est';
+    el.innerHTML = '<b>Timing perkiraan</b> — belum ada timing asli; kata dibagi menurut panjang hurufnya. Impor SRT per kata atau ukur dari voice over untuk timing yang sebenarnya.';
+    if(reset) reset.style.display = 'none';
   }
-
-  // fraksi waktu mulai tiap kata (ditimbang jumlah huruf)
+}
+function capSetTokens(tokens, total, src){
+  cap.tokens = tokens; cap.tokensTotal = total; cap.timingSrc = src;
+  cap.tokensText = capText();
+  capTimingStatusUpdate();
+}
+/* Timing tiap kata untuk satu potongan, dalam detik lokal potongan.
+   Pakai token asli bila jumlah katanya cocok; selain itu perkiraan tertimbang huruf. */
+function capWordTimes(item){
+  var words = item.text.split(/\s+/).filter(Boolean);
+  if(!words.length) return [];
+  if(cap.tokens && cap.tokens.length && cap.timeline && cap.tokensTotal > 0){
+    var scale = cap.timeline.total / cap.tokensTotal;
+    var toks = [];
+    for(var i = 0; i < cap.tokens.length; i++){
+      var ts = cap.tokens[i].start * scale;
+      if(ts >= item.start - 0.06 && ts < item.start + item.dur - 0.01){
+        toks.push({ start: ts - item.start, end: cap.tokens[i].end * scale - item.start });
+      }
+    }
+    if(toks.length === words.length){
+      return words.map(function(w, i){
+        var s = clamp(toks[i].start, 0, Math.max(0, item.dur - 0.05));
+        var e = clamp(toks[i].end, s + 0.05, item.dur);
+        if(i + 1 < toks.length) e = Math.max(e, Math.min(clamp(toks[i + 1].start, 0, item.dur), item.dur));
+        return { w: w, start: s, end: e };
+      });
+    }
+  }
   var totalCh = 0;
   words.forEach(function(w){ totalCh += w.length + 1; });
-  var starts = [], acc = 0;
-  words.forEach(function(w){ starts.push(acc / totalCh); acc += w.length + 1; });
-  var active = 0;
-  for(var i = 0; i < words.length; i++){ if(prog >= starts[i]) active = i; }
+  var acc = 0, out = [];
+  words.forEach(function(w, i){
+    var s = acc / totalCh; acc += w.length + 1;
+    var e = (i === words.length - 1) ? 1 : acc / totalCh;
+    out.push({ w: w, start: s * item.dur, end: e * item.dur });
+  });
+  return out;
+}
+/* Halaman caption: kata dikelompokkan 1–4 kata per halaman (bukan satu baris panjang) */
+function capPages(item){
+  var wt = capWordTimes(item);
+  var pages = [];
+  for(var i = 0; i < wt.length; i += cap.pageWords){
+    var chunk = wt.slice(i, i + cap.pageWords);
+    pages.push({ words: chunk, start: chunk[0].start, end: chunk[chunk.length - 1].end });
+  }
+  return pages;
+}
+function capPageAt(pages, local){
+  if(!pages.length) return null;
+  var pg = pages[0];
+  for(var i = 0; i < pages.length; i++){
+    if(local >= pages[i].start - 0.001) pg = pages[i]; else break;
+  }
+  return pg;
+}
+/* ---------- impor SRT per kata ---------- */
+function sfSrtToMs(t){
+  var m = String(t).trim().match(/(?:(\d+):)?(\d{1,2}):(\d{1,2})[.,](\d{1,3})/);
+  if(!m) return null;
+  var frac = parseInt(m[4], 10) * (m[4].length === 1 ? 100 : (m[4].length === 2 ? 10 : 1));
+  return (((parseInt(m[1] || '0', 10) * 60) + parseInt(m[2], 10)) * 60 + parseInt(m[3], 10)) * 1000 + frac;
+}
+function sfParseSrt(text){
+  var clean = String(text || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+  var blocks = clean.split(/\n\s*\n/);
+  var cues = [];
+  blocks.forEach(function(b){
+    var lines = b.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    var ti = -1;
+    for(var i = 0; i < lines.length; i++){ if(lines[i].indexOf('-->') >= 0){ ti = i; break; } }
+    if(ti < 0) return;
+    var parts = lines[ti].split('-->');
+    var s = sfSrtToMs(parts[0]), e = sfSrtToMs(parts[1]);
+    if(s === null || e === null) return;
+    var txt = lines.slice(ti + 1).join(' ').replace(/<[^>]+>/g, '').trim();
+    if(txt) cues.push({ text: txt, start: s / 1000, end: e / 1000 });
+  });
+  cues.sort(function(a, b){ return a.start - b.start; });
+  return cues;
+}
+function capImportSrt(text){
+  var cues = sfParseSrt(text);
+  if(!cues.length){ toast('Tidak ada cue SRT yang terbaca — cek format waktunya (00:00:01,200 --> 00:00:01,640)'); return; }
+  var multi = 0;
+  cues.forEach(function(c){ if(c.text.split(/\s+/).filter(Boolean).length > 1) multi++; });
+  if(multi){
+    toast('SRT ini punya ' + multi + ' cue multi-kata — timing asli perlu SRT satu kata per cue (hasil Whisper); timing tidak ditebak dari cue kalimat');
+    return;
+  }
+  var total = cues[cues.length - 1].end;
+  if(!(total > 0)){ toast('Durasi SRT tidak valid'); return; }
+  capSetTokens(cues.map(function(c){ return { text: c.text, start: c.start, end: c.end }; }), total, 'srt');
+  render();
+  toast('Timing asli dimuat — ' + cues.length + ' kata dari SRT');
+}
+/* ---------- ukur timing kata dari voice over (event boundary Web Speech) ---------- */
+function capMeasureVo(){
+  if(cap.measuring){
+    cap.measuring = false;
+    try { speechSynthesis.cancel(); } catch(e){}
+    capEls.measureBtn.textContent = 'Ukur Timing Kata dari Voice Over';
+    toast('Pengukuran timing dibatalkan — timing tetap seperti sebelumnya');
+    return;
+  }
+  if(!window.speechSynthesis){ toast('Browser ini tidak mendukung text-to-speech'); return; }
+  if(!cap.timeline) capBuild();
+  var items = cap.timeline.items.filter(function(it){ return it.text; });
+  if(!items.length){ toast('Teks caption masih kosong'); return; }
+  var btn = capEls.measureBtn;
+  cap.measuring = true;
+  btn.textContent = '■ Berhenti Mengukur';
+  try { speechSynthesis.cancel(); } catch(e){}
+  var tokens = [], acc = 0, idx = 0, gotBoundary = 0;
+  function finish(ok, msg){
+    cap.measuring = false;
+    btn.textContent = 'Ukur Timing Kata dari Voice Over';
+    if(ok && tokens.length){
+      tokens.sort(function(a, b){ return a.start - b.start; });
+      capSetTokens(tokens, Math.max(acc, tokens[tokens.length - 1].end), 'vo');
+      render();
+    }
+    toast(msg);
+  }
+  function speakNext(){
+    if(!cap.measuring) return;
+    if(idx >= items.length){
+      if(gotBoundary > 0 && tokens.length) finish(true, 'Timing asli tersimpan — ' + tokens.length + ' kata diukur dari voice over');
+      else finish(false, 'Suara/browser ini tidak mengirim event timing kata — timing tetap perkiraan. Coba suara lain atau impor SRT per kata.');
+      return;
+    }
+    var item = items[idx];
+    btn.textContent = '■ Mengukur… potongan ' + (idx + 1) + '/' + items.length + ' — klik untuk berhenti';
+    var words = item.text.split(/\s+/).filter(Boolean);
+    var starts = {};
+    var u = new SpeechSynthesisUtterance(item.text);
+    u.lang = 'id-ID';
+    var vs = speechSynthesis.getVoices();
+    for(var i = 0; i < vs.length; i++){ if(/^id/i.test(vs[i].lang)){ u.voice = vs[i]; break; } }
+    u.pitch = cap.vo === 'wanita' ? 1.3 : (cap.vo === 'pria' ? 0.75 : 1);
+    u.rate = 1.03;
+    var ended = false;
+    var watchdog = setTimeout(function(){
+      if(!ended){ ended = true; try { speechSynthesis.cancel(); } catch(e){} finish(false, 'Pengukuran berhenti — voice over tidak selesai diputar'); }
+    }, Math.max(9000, item.dur * 4500));
+    u.onboundary = function(ev){
+      if(ev.charIndex === undefined || ev.charIndex === null) return;
+      var pos = 0, wi = -1;
+      for(var k = 0; k < words.length; k++){
+        if(pos === ev.charIndex || (pos < ev.charIndex && ev.charIndex < pos + words[k].length)){ wi = k; break; }
+        pos += words[k].length + 1;
+      }
+      if(wi < 0 || starts[wi] !== undefined) return;
+      starts[wi] = acc + (ev.elapsedTime || 0) / 1000;
+      gotBoundary++;
+    };
+    u.onend = function(ev){
+      if(ended) return; ended = true; clearTimeout(watchdog);
+      if(!cap.measuring) return;
+      var durU = (ev && ev.elapsedTime) ? ev.elapsedTime / 1000 : 0;
+      if(!(durU > 0)) durU = Math.max(0.4, (starts[words.length - 1] !== undefined ? starts[words.length - 1] - acc : 0) + 0.45);
+      var base = tokens.length, lastStart = acc;
+      words.forEach(function(w, wi){
+        var s = (starts[wi] !== undefined) ? starts[wi] : lastStart;
+        tokens.push({ text: w, start: s, end: s + 0.3 });
+        lastStart = s;
+      });
+      for(var j = 0; j < words.length; j++){
+        var tk = tokens[base + j];
+        tk.end = (j + 1 < words.length) ? tokens[base + j + 1].start : acc + durU;
+        if(tk.end <= tk.start) tk.end = tk.start + 0.1;
+      }
+      acc += durU;
+      idx++;
+      speakNext();
+    };
+    u.onerror = function(){
+      if(!ended){ ended = true; clearTimeout(watchdog); finish(false, 'Voice over gagal diputar di browser ini'); }
+    };
+    try { speechSynthesis.speak(u); }
+    catch(e){ clearTimeout(watchdog); finish(false, 'Voice over gagal diputar di browser ini'); }
+  }
+  speakNext();
+}
 
+/* ---------- caption animation ---------- */
+// spring pop per kata: skala 0,6 -> 1 dengan micro-overshoot (skill caption_animation)
+function sfSpringPop(p){
+  return 0.6 + 0.4 * easeOutBack(clamp(p, 0, 1));
+}
+function drawCaption(item){
+  if(!item || !item.text) return;
+  var W = canvas.width, H = canvas.height;
+  var minD = Math.min(W, H);
+  var local = Math.max(0, cap.ph - item.start);
+  var style = cap.style;
+  var pos = cap.pos;
+  var fs = Math.round(minD * 0.066 * cap.scale);
+  var maxW = W * 0.80;                                  // safe-area: lebar tengah 80%
+  var maxLines = 2;
+  var accent = cap.active;                              // satu warna aksen untuk kata aktif
+
+  var pages = capPages(item);
+  if(!pages.length) return;
+  var page = capPageAt(pages, local);
+  var pWords = page.words;
+  var active = -1;                                      // kata aktif di halaman ini
+  for(var ai = 0; ai < pWords.length; ai++){ if(local >= pWords[ai].start) active = ai; }
+
+  var baseCol = cap.color;
+  var dimCol = sfHexA(baseCol, 0.45);
+
+  ctx.save();
+  ctx.textBaseline = 'middle';
   ctx.font = '800 ' + fs + 'px "Plus Jakarta Sans", sans-serif';
   var spaceW = ctx.measureText(' ').width;
+
+  // susun kata halaman ini jadi baris (maks 2 baris)
   var lines = [], cur = [], curW = 0;
-  words.forEach(function(w, wi){
-    var ww = ctx.measureText(w).width;
+  pWords.forEach(function(o){
+    var ww = ctx.measureText(o.w).width;
     var add = (cur.length ? spaceW : 0) + ww;
     if(cur.length && curW + add > maxW){ lines.push(cur); cur = []; curW = 0; add = ww; }
-    cur.push({ w: w, i: wi, wdt: ww }); curW += add;
+    cur.push({ w: o.w, start: o.start, end: o.end, wdt: ww }); curW += add;
   });
   if(cur.length) lines.push(cur);
   if(lines.length > maxLines){
@@ -5257,12 +5560,59 @@ function drawCaption(item){
     extra.forEach(function(l){ merged = merged.concat(l); });
     lines.push(merged);
   }
+  var flat = 0;
+  lines.forEach(function(l){ l.forEach(function(o){ o.gi = flat++; }); });
+
   var lh = fs * 1.18;
   var blockH = lines.length * lh;
+  // posisi vertikal safe-area 9:16: band tengah 62–70%, bawah menyisakan ±280px @1920
+  var cy;
+  if(pos === 'top') cy = H * 0.12 + blockH / 2;
+  else if(pos === 'bot') cy = H - Math.max(H * 0.146, H * 0.10) - blockH / 2;
+  else cy = (H >= W ? H * 0.66 : H * 0.58);   // band aman tengah 62–70%
   var yTop = cy - blockH / 2 + lh / 2;
 
+  function drawWord(o, cxw, y, color, scale, alpha){
+    ctx.save();
+    ctx.translate(cxw, y);
+    if(scale !== 1) ctx.scale(scale, scale);
+    if(alpha !== undefined && alpha < 1) ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.lineWidth = Math.max(2, fs * 0.075);            // stroke 2–6px di skala render
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.strokeText(o.w, 0, 0);
+    ctx.fillText(o.w, 0, 0);
+    ctx.restore();
+  }
+
+  if(style === 'typewriter'){
+    var pageText = pWords.map(function(o){ return o.w; }).join(' ');
+    var pDur = Math.max(0.05, page.end - page.start);
+    var nCh = Math.floor(clamp((local - page.start) / pDur, 0, 1) * pageText.length);
+    var shown = pageText.substring(0, nCh);
+    var tLines = wrapLines(shown || ' ', fs, maxW).slice(0, maxLines);
+    sfShadow(true, fs);
+    ctx.font = '800 ' + fs + 'px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'center'; ctx.fillStyle = baseCol;
+    ctx.lineWidth = Math.max(2, fs * 0.075); ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    var lhT = fs * 1.18;
+    var y0T = cy - (tLines.length - 1) * lhT / 2;
+    tLines.forEach(function(ln, i){ ctx.strokeText(ln, W / 2, y0T + i * lhT); ctx.fillText(ln, W / 2, y0T + i * lhT); });
+    if(nCh > 0 && Math.floor(local * 2.4) % 2 === 0){
+      var lastLn = tLines[tLines.length - 1] || '';
+      var lwLast = ctx.measureText(lastLn).width;
+      sfShadow(false, 0);
+      ctx.fillStyle = accent;
+      ctx.fillRect(W / 2 + lwLast / 2 + fs * 0.10, y0T + (tLines.length - 1) * lhT - fs * 0.42, fs * 0.14, fs * 0.84);
+    }
+    ctx.restore();
+    ctx.textAlign = 'left';
+    return;
+  }
+
   if(style === 'fadeup'){
-    var a = clamp(local / 0.35, 0, 1);
+    var a = clamp((local - page.start) / 0.35, 0, 1);
     ctx.globalAlpha = a;
     yTop += (1 - a) * minD * 0.03;
   }
@@ -5288,22 +5638,14 @@ function drawCaption(item){
       if(oi) x += spaceW;
       var cxw = x + o.wdt / 2;
       if(style === 'karaoke'){
-        if(o.i < active) ctx.fillStyle = baseCol;
-        else if(o.i === active) ctx.fillStyle = '#FFC531';
-        else ctx.fillStyle = dimCol;
-        var sc = o.i === active ? 1 + 0.10 * Math.sin(clamp((prog - starts[o.i]) / 0.08, 0, 1) * Math.PI) : 1;
-        ctx.save(); ctx.translate(cxw, y); ctx.scale(sc, sc); ctx.fillText(o.w, 0, 0); ctx.restore();
+        var col = o.gi < active ? baseCol : (o.gi === active ? accent : dimCol);
+        var sc = o.gi === active ? 1 + 0.12 * Math.sin(clamp((local - o.start) / 0.25, 0, 1) * Math.PI) : 1;
+        drawWord(o, cxw, y, col, sc);
       } else if(style === 'pop'){
-        var wp = clamp((prog - starts[o.i]) / 0.10, 0, 1);
-        if(wp > 0){
-          var sc2 = easeOutBack(wp);
-          if(sc2 <= 0.01) sc2 = 0.01;
-          ctx.fillStyle = o.i === active ? '#FFC531' : baseCol;
-          ctx.save(); ctx.translate(cxw, y); ctx.scale(sc2, sc2); ctx.fillText(o.w, 0, 0); ctx.restore();
-        }
+        var wp = clamp((local - o.start) / 0.28, 0, 1);
+        if(wp > 0) drawWord(o, cxw, y, o.gi === active ? accent : baseCol, sfSpringPop(wp), Math.min(1, wp * 1.6));
       } else {
-        ctx.fillStyle = (style === 'boldbox' && o.i === active) ? '#FFC531' : baseCol;
-        ctx.fillText(o.w, cxw, y);
+        drawWord(o, cxw, y, (style === 'boldbox' && o.gi === active) ? accent : baseCol, 1);
       }
       x += o.wdt;
     });
@@ -5314,6 +5656,7 @@ function drawCaption(item){
 
 /* ---------- voice over (pratinjau text-to-speech browser) ---------- */
 function sfSpeak(text, queue){
+  if(typeof cap !== 'undefined' && cap && cap.measuring) return;   // jangan ganggu pengukuran timing kata
   if(sf.vo === 'off' || !window.speechSynthesis || !text) return;
   try {
     if(!queue) speechSynthesis.cancel();
@@ -5344,38 +5687,70 @@ function sfSrtTime(s){
   if(ms === 1000){ ms = 0; sec += 1; }
   return p(hr) + ':' + p(min) + ':' + p(sec) + ',' + p(ms, 3);
 }
-function sfDownloadSrt(){
-  if(!sf.timeline) sfBuild();
-  var out = [], n = 0;
-  sf.timeline.items.forEach(function(it){
+/* Cue ekspor dibuat dari token kata yang sama dengan caption di video, dikelompokkan per halaman */
+function capExportCues(){
+  if(!cap.timeline) capBuild();
+  var cues = [];
+  cap.timeline.items.forEach(function(it){
     if(!it.text) return;
-    n++;
-    out.push(n + '\n' + sfSrtTime(it.start) + ' --> ' + sfSrtTime(it.start + it.dur) + '\n' + it.text + '\n');
+    capPages(it).forEach(function(pg){
+      cues.push({
+        start: it.start + pg.start,
+        end: it.start + Math.max(pg.end, pg.start + 0.3),
+        text: pg.words.map(function(o){ return o.w; }).join(' ')
+      });
+    });
   });
-  downloadBlob(new Blob([out.join('\n')], { type: 'text/plain' }), 'short-form-caption.srt');
-  toast('File SRT diunduh — ' + n + ' potongan caption');
+  for(var i = 0; i + 1 < cues.length; i++){
+    if(cues[i].end > cues[i + 1].start) cues[i].end = Math.max(cues[i].start + 0.1, cues[i + 1].start);
+  }
+  return cues;
+}
+function capDownloadSrt(){
+  var cues = capExportCues();
+  var out = [];
+  cues.forEach(function(c, i){
+    out.push((i + 1) + '\n' + sfSrtTime(c.start) + ' --> ' + sfSrtTime(c.end) + '\n' + c.text + '\n');
+  });
+  downloadBlob(new Blob([out.join('\n')], { type: 'text/plain' }), 'caption-animasi.srt');
+  toast('File SRT diunduh — ' + cues.length + ' cue dari token kata caption');
+}
+function sfVttTime(s){ return sfSrtTime(s).replace(',', '.'); }
+function capDownloadVtt(){
+  var cues = capExportCues();
+  var out = ['WEBVTT', ''];
+  cues.forEach(function(c, i){
+    out.push((i + 1) + '\n' + sfVttTime(c.start) + ' --> ' + sfVttTime(c.end) + '\n' + c.text + '\n');
+  });
+  downloadBlob(new Blob([out.join('\n')], { type: 'text/vtt' }), 'caption-animasi.vtt');
+  toast('File VTT diunduh — ' + cues.length + ' cue dari token kata caption');
 }
 
-/* ---------- ganti mode & kontrol Short Form ---------- */
-function sfSyncPosSeg(){
-  var btns = document.querySelectorAll('#sfPosSeg button');
-  for(var i = 0; i < btns.length; i++){
-    btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-pos') === sf.capPos ? 'true' : 'false');
-  }
-}
+/* ---------- ganti mode ---------- */
 function setMode(m){
   state.mode = m;
   var btns = document.querySelectorAll('#modeSeg button');
   for(var i = 0; i < btns.length; i++){
     btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-mode') === m ? 'true' : 'false');
   }
-  document.querySelector('.side').classList.toggle('sf-on', m === 'short');
+  var side = document.querySelector('.side');
+  side.classList.toggle('sf-on', m === 'short');
+  side.classList.toggle('cap-on', m === 'caption');
   state.playhead = 0;
   sf.lastItem = -1;
   if(window.speechSynthesis){ try { speechSynthesis.cancel(); } catch(e){} }
+  if(m !== 'caption' && cap.showSafe){
+    cap.showSafe = false;
+    document.getElementById('safeGuide').classList.remove('on');
+    capSyncSafeBtn();
+  }
   if(m === 'short'){
     sfBuild();
-    toast('Mode Short Form — tulis narasi, pilih gaya caption, lalu Rekam Video');
+    toast('Mode Short Form — tulis narasi, atur latar tiap potongan, lalu Rekam Video');
+  }
+  if(m === 'caption'){
+    capBuild();
+    toast('Mode Caption — tulis teks, atur timing & gaya caption, lalu Rekam Video');
   }
   hardClear(); render();
 }
@@ -5402,13 +5777,6 @@ document.getElementById('sfExampleBtn').addEventListener('click', function(){
   render();
   toast('Contoh "Gajian vs Tanggal Tua" dimuat');
 });
-sfEls.capStyle.addEventListener('change', function(){ sf.capStyle = this.value; render(); });
-document.getElementById('sfPosSeg').addEventListener('click', function(e){
-  var b = e.target.closest('button'); if(!b) return;
-  sf.capPos = b.getAttribute('data-pos');
-  sfSyncPosSeg();
-  render();
-});
 sfEls.vo.addEventListener('change', function(){
   sf.vo = this.value;
   sf.lastItem = -1;
@@ -5429,12 +5797,7 @@ document.getElementById('sfBgSeg').addEventListener('click', function(e){
   b.setAttribute('aria-pressed', 'true');
   sf.bg = v;
   if(v === 'beat'){
-    // gaya referensi otomatis: tengah, tanpa kotak, bold + shadow, maks 2 baris, kata aktif kuning
-    sf.capStyle = 'karaoke';
-    sfEls.capStyle.value = 'karaoke';
-    sf.capPos = 'mid';
-    sfSyncPosSeg();
-    toast('Cerita Beat aktif — caption otomatis gaya referensi (tengah, kata aktif kuning)');
+    toast('Cerita Beat aktif — tiap potongan digambar jadi scene sendiri mengikuti kata-katanya');
   }
   hardClear(); render();
 });
@@ -5447,8 +5810,212 @@ document.getElementById('sfAutoBgSeg').addEventListener('click', function(e){
   render();
   toast(sf.autoBg ? 'Latar otomatis aktif — latar tiap potongan mengikuti kata-katanya' : 'Latar otomatis mati — potongan Otomatis ikut latar default');
 });
-document.getElementById('sfSrtBtn').addEventListener('click', sfDownloadSrt);
+/* ================= Mode Caption — Animasi Caption mandiri ================= */
+var cap = {
+  style: 'karaoke',      // 'karaoke' | 'pop' | 'typewriter' | 'fadeup' | 'boldbox'
+  pos: 'mid',            // 'top' | 'mid' | 'bot'
+  scale: 1,              // pengali ukuran font caption (0.7–1.4)
+  color: '#FFFFFF',      // warna teks caption
+  active: '#FFC531',     // warna aksen kata aktif (satu warna saja)
+  pageWords: 3,          // kata per halaman caption (1–4)
+  vo: 'standar',         // suara untuk pengukuran timing: 'wanita' | 'pria' | 'standar'
+  bgType: 'solid',       // 'solid' | 'grad' | 'preset'
+  bgSolid: '#1C1A17',
+  bgG1: '#20638F',
+  bgG2: '#0B2A4A',
+  bgPreset: '',
+  timeline: null,
+  ph: 0,
+  tokens: null,          // timing kata asli: [{ text, start, end }] dalam basis waktu sumber (detik)
+  tokensTotal: 0,        // total durasi basis waktu sumber token
+  tokensText: '',        // teks saat token ditangkap (token gugur kalau teks berubah)
+  timingSrc: '',         // '' | 'srt' | 'vo'
+  measuring: false,
+  showSafe: false
+};
+var capEls = {
+  text: document.getElementById('capText'),
+  stats: document.getElementById('capStats'),
+  style: document.getElementById('capStyleSel'),
+  vo: document.getElementById('capVoSel'),
+  capSize: document.getElementById('capCapSize'),
+  capSizeOut: document.getElementById('capCapSizeOut'),
+  capColor: document.getElementById('capCapColor'),
+  capColorHex: document.getElementById('capCapColorHex'),
+  capActive: document.getElementById('capCapActive'),
+  capActiveHex: document.getElementById('capCapActiveHex'),
+  timingStatus: document.getElementById('capTimingStatus'),
+  srtPaste: document.getElementById('capSrtPaste'),
+  measureBtn: document.getElementById('capMeasureBtn'),
+  timingResetBtn: document.getElementById('capTimingResetBtn'),
+  safeBtn: document.getElementById('capSafeBtn'),
+  safeGuide: document.getElementById('safeGuide'),
+  bgType: document.getElementById('capBgType'),
+  bgSolid: document.getElementById('capBgSolid'),
+  bgSolidHex: document.getElementById('capBgSolidHex'),
+  bgG1: document.getElementById('capBgG1'),
+  bgG1Hex: document.getElementById('capBgG1Hex'),
+  bgG2: document.getElementById('capBgG2'),
+  bgG2Hex: document.getElementById('capBgG2Hex'),
+  bgPreset: document.getElementById('capBgPreset'),
+  bgSolidRow: document.getElementById('capBgSolidRow'),
+  bgGradRow: document.getElementById('capBgGradRow'),
+  bgPresetRow: document.getElementById('capBgPresetRow')
+};
+PRESETS.forEach(function(p){
+  var op = document.createElement('option');
+  op.value = p.id; op.textContent = p.name;
+  capEls.bgPreset.appendChild(op);
+});
+if(PRESETS[0]){ cap.bgPreset = PRESETS[0].id; capEls.bgPreset.value = cap.bgPreset; }
+function capBuild(){
+  var lines = capEls.text.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  var items = [], tcur = 0;
+  lines.forEach(function(ln, i){
+    var d = sfSegDur(ln);
+    items.push({ kind:'cap', idx: i, text: ln, start: tcur, dur: d });
+    tcur += d;
+  });
+  if(!items.length){ items.push({ kind:'cap', idx: 0, text: '', start: 0, dur: 3 }); tcur = 3; }
+  cap.timeline = { items: items, total: tcur };
+  // token timing asli hanya berlaku selama teksnya tidak berubah
+  if(cap.tokens && cap.tokensText !== capText()){
+    cap.tokens = null; cap.tokensTotal = 0; cap.timingSrc = '';
+  }
+  capTimingStatusUpdate();
+  var words = capEls.text.value.split(/\s+/).filter(Boolean).length;
+  capEls.stats.innerHTML = '<b>' + words + ' kata</b> · ' + lines.length + ' baris teks · total ±<b>' + tcur.toFixed(1) + ' detik</b>';
+}
+function capItemAt(ph){
+  if(!cap.timeline) return null;
+  var items = cap.timeline.items;
+  for(var i = 0; i < items.length; i++){
+    if(ph >= items[i].start && ph < items[i].start + items[i].dur) return items[i];
+  }
+  return items[items.length - 1];
+}
+/* latar Mode Caption: warna solid / gradien 2 warna / preset loop */
+function drawCapBg(t){
+  var W = canvas.width, H = canvas.height;
+  if(cap.bgType === 'solid'){
+    ctx.fillStyle = cap.bgSolid;
+    ctx.fillRect(0, 0, W, H);
+    return true;
+  }
+  if(cap.bgType === 'grad'){
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, cap.bgG1);
+    g.addColorStop(1, cap.bgG2);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    return true;
+  }
+  if(cap.bgType === 'preset'){
+    var ast = sfPresetAst(cap.bgPreset);
+    if(ast){
+      try { execCode(ast, ctx, t, W, H, state.palette); return true; } catch(e){ return false; }
+    }
+  }
+  return false;
+}
+function capSyncSafeBtn(){
+  if(!capEls.safeBtn) return;
+  capEls.safeBtn.setAttribute('aria-pressed', cap.showSafe ? 'true' : 'false');
+  capEls.safeBtn.textContent = cap.showSafe ? 'Sembunyikan Panduan Safe-Area' : 'Tampilkan Panduan Safe-Area';
+}
+function capSyncBgRows(){
+  capEls.bgSolidRow.style.display = cap.bgType === 'solid' ? '' : 'none';
+  capEls.bgGradRow.style.display = cap.bgType === 'grad' ? '' : 'none';
+  capEls.bgPresetRow.style.display = cap.bgType === 'preset' ? '' : 'none';
+}
+/* ---------- kontrol Mode Caption ---------- */
+var capBuildTimer = null;
+capEls.text.addEventListener('input', function(){
+  clearTimeout(capBuildTimer);
+  capBuildTimer = setTimeout(function(){ capBuild(); if(state.mode === 'caption') render(); }, 250);
+});
+capEls.style.addEventListener('change', function(){ cap.style = this.value; render(); });
+capEls.vo.addEventListener('change', function(){ cap.vo = this.value; });
+document.getElementById('capPosSeg').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return;
+  cap.pos = b.getAttribute('data-pos');
+  var btns = this.querySelectorAll('button');
+  for(var i = 0; i < btns.length; i++) btns[i].setAttribute('aria-pressed', btns[i] === b ? 'true' : 'false');
+  render();
+});
+document.getElementById('capPageSeg').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return;
+  cap.pageWords = parseInt(b.getAttribute('data-pages'), 10) || 3;
+  var btns = this.querySelectorAll('button');
+  for(var i = 0; i < btns.length; i++) btns[i].setAttribute('aria-pressed', btns[i] === b ? 'true' : 'false');
+  render();
+});
+capEls.capSize.addEventListener('input', function(){
+  cap.scale = parseInt(this.value, 10) / 100;
+  capEls.capSizeOut.textContent = this.value + '%';
+  render();
+});
+capEls.capColor.addEventListener('input', function(){
+  cap.color = this.value.toUpperCase();
+  capEls.capColorHex.textContent = cap.color;
+  render();
+});
+capEls.capActive.addEventListener('input', function(){
+  cap.active = this.value.toUpperCase();
+  capEls.capActiveHex.textContent = cap.active;
+  render();
+});
+document.getElementById('capSrtImportBtn').addEventListener('click', function(){
+  var v = capEls.srtPaste.value.trim();
+  if(!v){ toast('Tempel dulu isi SRT-nya di kotak impor'); return; }
+  capImportSrt(v);
+});
+document.getElementById('capSrtFile').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  var rd = new FileReader();
+  rd.onload = function(){ capEls.srtPaste.value = String(rd.result || ''); capImportSrt(String(rd.result || '')); };
+  rd.onerror = function(){ toast('File tidak bisa dibaca'); };
+  rd.readAsText(f);
+  this.value = '';
+});
+capEls.measureBtn.addEventListener('click', capMeasureVo);
+capEls.timingResetBtn.addEventListener('click', function(){
+  cap.tokens = null; cap.tokensTotal = 0; cap.timingSrc = '';
+  capTimingStatusUpdate();
+  render();
+  toast('Timing asli dihapus — caption kembali ke timing perkiraan');
+});
+capEls.safeBtn.addEventListener('click', function(){
+  cap.showSafe = !cap.showSafe;
+  capEls.safeGuide.classList.toggle('on', cap.showSafe);
+  capSyncSafeBtn();
+});
+capEls.bgType.addEventListener('change', function(){
+  cap.bgType = this.value;
+  capSyncBgRows();
+  render();
+});
+capEls.bgSolid.addEventListener('input', function(){
+  cap.bgSolid = this.value.toUpperCase();
+  capEls.bgSolidHex.textContent = cap.bgSolid;
+  render();
+});
+capEls.bgG1.addEventListener('input', function(){
+  cap.bgG1 = this.value.toUpperCase();
+  capEls.bgG1Hex.textContent = cap.bgG1;
+  render();
+});
+capEls.bgG2.addEventListener('input', function(){
+  cap.bgG2 = this.value.toUpperCase();
+  capEls.bgG2Hex.textContent = cap.bgG2;
+  render();
+});
+capEls.bgPreset.addEventListener('change', function(){ cap.bgPreset = this.value; render(); });
+document.getElementById('capSrtBtn').addEventListener('click', capDownloadSrt);
+document.getElementById('capVttBtn').addEventListener('click', capDownloadVtt);
 sfBuild();
+capBuild();
 
 /* ================= init ================= */
 editor.value = PRESETS[0].code;
